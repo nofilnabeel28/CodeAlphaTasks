@@ -1,0 +1,39 @@
+# Load dataset
+df = pd.read_csv("/content/cardata.csv")
+
+# 1. Inspect Dimensions & Schema
+print(f"Dataset Shape: {df.shape[0]} rows, {df.shape[1]} columns\n")
+print(df.info())
+
+# 2. Variable Classification
+num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+cat_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
+
+print(f"\nNumerical Variables ({len(num_cols)}):", num_cols)
+print(f"Categorical Variables ({len(cat_cols)}):", cat_cols)
+
+# 3. Summary Statistics
+print("\n--- Numerical Summary ---")
+display(df[num_cols].describe().T[['mean', 'std', 'min', '50%', 'max']])
+
+print("\n--- Categorical Summary ---")
+display(df[cat_cols].describe().T)# Load dataset
+df = pd.read_csv("/content/cardata.csv")
+
+# 1. Inspect Dimensions & Schema
+print(f"Dataset Shape: {df.shape[0]} rows, {df.shape[1]} columns\n")
+print(df.info())
+
+# 2. Variable Classification
+num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+cat_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
+
+print(f"\nNumerical Variables ({len(num_cols)}):", num_cols)
+print(f"Categorical Variables ({len(cat_cols)}):", cat_cols)
+
+# 3. Summary Statistics
+print("\n--- Numerical Summary ---")
+display(df[num_cols].describe().T[['mean', 'std', 'min', '50%', 'max']])
+
+print("\n--- Categorical Summary ---")
+display(df[cat_cols].describe().T)
