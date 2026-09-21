@@ -1,0 +1,177 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+
+# Professional Style & Design Setup
+sns.set_theme(style="whitegrid")
+plt.rcParams["font.family"] = "sans-serif"
+plt.rcParams["font.sans-serif"] = ["DejaVu Sans", "Arial"]
+
+# ==========================================
+# 1. RAW DATA CREATION
+# ==========================================
+np.random.seed(42)
+dates = pd.date_range(start="2025-01-01", periods=12, freq="ME")
+categories = ["Electronics", "Clothing", "Home & Kitchen", "Books"]
+
+data = []
+for date in dates:
+    for cat in categories:
+        sales = np.random.randint(15000, 50000)
+        target = np.random.randint(20000, 45000)
+        satisfaction = np.round(np.random.uniform(3.5, 4.9), 2)
+        data.append(
+            {
+                "Month": date.strftime("%b %Y"),
+                "Category": cat,
+                "Sales_Revenue": sales,
+                "Target_Revenue": target,
+                "Customer_Satisfaction": satisfaction,
+            }
+        )
+
+df = pd.DataFrame(data)
+
+# Print Summary of Raw Data
+print("=== RAW DATA SAMPLE ===")
+print(df.head(10))
+print("\n" + "=" * 50 + "\n")
+
+# ==========================================
+# 2. DASHBOARD / MULTI-PANEL VISUALIZATION
+# ==========================================
+fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+fig.suptitle(
+    "E-Commerce Performance & Customer Insights Dashboard",
+    fontsize=20,
+    fontweight="bold",
+    y=0.98,
+)
+
+# Visual 1: Total Sales Revenue by Category (Bar Chart)
+cat_sales = (
+    df.groupby("Category")["Sales_Revenue"]
+    .sum()
+    .reset_index()
+    .sort_values(by="Sales_Revenue", ascending=False)
+)
+sns.barplot(
+    data=cat_sales,
+    x="Category",
+    y="Sales_Revenue",
+    ax=axes[0, 0],
+    palette="Blues_r",
+)
+axes[0, 0].set_title(
+    "1. Total Sales Revenue by Category", fontsize=14, fontweight="bold"
+)
+axes[0, 0].set_ylabel("Revenue ($)")
+axes[0, 0].set_xlabel("")
+
+# Adding Data Labels on Bars
+for bar in axes[0, 0].patches:
+    axes[0, 0].annotate(
+        f"${bar.get_height():,.0f}",
+        (bar.get_x() + bar.get_width() / 2, bar.get_height()),
+        ha="center",
+        va="bottom",
+        fontsize=10,
+        xytext=(0, 3),
+        textcoords="offset points",
+    )
+
+# Visual 2: Sales vs Target Trend Over Time (Line Chart)
+monthly_trend = (
+    df.groupby("Month")[["Sales_Revenue", "Target_Revenue"]].sum().reset_index()
+)
+# Retain original month order
+monthly_trend["Month"] = pd.to_datetime(
+    monthly_trend["Month"], format="%b %Y"
+)
+monthly_trend = monthly_trend.sort_values("Month")
+monthly_trend["Month_Str"] = monthly_trend["Month"].dt.strftime("%b")
+
+axes[0, 1].plot(
+    monthly_trend["Month_Str"],
+    monthly_trend["Sales_Revenue"],
+    marker="o",
+    linewidth=2.5,
+    color="#2b5c8f",
+    label="Actual Sales",
+)
+axes[0, 1].plot(
+    monthly_trend["Month_Str"],
+    monthly_trend["Target_Revenue"],
+    linestyle="--",  # <-- Line ko dashed karne ke liye
+    marker="s",  # <-- Marker point ke liye (s = square, o = circle)
+    linewidth=2,
+    color="#d9534f",
+    label="Target",
+)
+axes[0, 1].set_title(
+    "2. Monthly Revenue Performance vs Target", fontsize=14, fontweight="bold"
+)
+axes[0, 1].set_ylabel("Revenue ($)")
+axes[0, 1].legend(loc="upper left")
+axes[0, 1].tick_params(axis="x", rotation=45)
+
+# Visual 3: Correlation Matrix / Heatmap
+numeric_df = df[
+    ["Sales_Revenue", "Target_Revenue", "Customer_Satisfaction"]
+].corr()
+sns.heatmap(
+    numeric_df,
+    annot=True,
+    cmap="coolwarm",
+    fmt=".2f",
+    ax=axes[1, 0],
+    cbar=False,
+    linewidths=1,
+)
+axes[1, 0].set_title(
+    "3. Metrics Correlation Heatmap", fontsize=14, fontweight="bold"
+)
+
+# Visual 4: Customer Satisfaction Distribution by Category (Box Plot)
+sns.boxplot(
+    data=df,
+    x="Category",
+    y="Customer_Satisfaction",
+    ax=axes[1, 1],
+    palette="Set2",
+)
+axes[1, 1].set_title(
+    "4. Customer Satisfaction Distribution", fontsize=14, fontweight="bold"
+)
+axes[1, 1].set_ylabel("Satisfaction Score (1-5)")
+axes[1, 1].set_xlabel("")
+
+# Clean layout spacing
+plt.tight_layout(rect=[0, 0, 1, 0.95])
+
+# Image save karne ke liye
+plt.savefig("data_visualization_task.png", dpi=300)
+
+# Dashboard Display karein
+plt.show()
+
+# ==========================================
+# 3. CRAFTING DATA STORY FOR DECISION-MAKING
+# ==========================================
+total_sales = df["Sales_Revenue"].sum()
+total_target = df["Target_Revenue"].sum()
+top_category = cat_sales.iloc[0]["Category"]
+avg_satisfaction = df["Customer_Satisfaction"].mean()
+
+print("=== DATA STORY & KEY INSIGHTS ===")
+print(
+    f"1. Overall Performance: Total sales reached ${total_sales:,.2f} against a target of ${total_target:,.2f}."
+)
+print(f"2. Top Performing Category: '{top_category}' generated maximum revenue.")
+print(
+    f"3. Customer Experience: Average satisfaction score is {avg_satisfaction:.2f}/5.0."
+)
+print(
+    "4. Actionable Recommendation: Allocate more inventory and marketing budget to high-revenue categories while addressing months where sales fell short of targets."
+)
